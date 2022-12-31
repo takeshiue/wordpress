@@ -1,0 +1,87 @@
+---
+- name: Configuration Wordpress Web Server
+  hosts: web
+  vars:
+    ansible_become: yes
+    ansible_become_method: sudo
+    ansible_become_password: vagrant
+
+  tasks:
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+      notify: Restart to Apply Configuration
+
+    - name: install WebService
+      yum:
+        name:
+          - httpd
+          - mod_ssl
+          - php
+        state: latest
+
+    - name: intall PHP Packages
+      yum: 
+        name:
+          - php
+          - php-mysqlnd
+          - php-pecl-json
+        
+    - name: Install MariaDB
+      yum:
+        name:
+          - MySQL-python
+          - mariadb-server
+        state: latest
+
+    - name: Install Other Packages
+      yum:
+        name:
+          - postfix
+          - tcpdump
+          - sysstat
+        state: latest
+    - name: Copy Wordpress Binary Archive
+      copy:
+        src: ./files/wordpress-6.1.1.tar.gz
+        dest: /tmp
+    - name: Unpack Wordpress Binary
+      unarchive:
+        src: /tmp/wordpress-6.1.1.tar.gz
+        dest: /var/www/html
+        copy: no
+        owner: vagrant
+        group: apache
+    - name: Start httpd
+      systemd:
+        state: started
+        enabled: yes
+        name: httpd
+    - name: Start MariaDB
+      systemd:
+        state: started
+        enabled: yes
+        name: mariadb
+    - name: Start Postfix
+      systemd:
+        state: started
+        enabled: yes
+        name: postfix
+    - name: Create Database
+      mysql_db:
+        name: "{{ DBName }}"
+        state: present
+        encoding: utf8
+        collation: utf8_bin
+    - name: Create DBuser with GRANT Option
+      mysql_user:
+        name: "{{ DBUser }}"
+        state: present
+        password: "{{ DBPassword }}"
+        priv: "{{ DBName }}.*:ALL,GRANT"
+
+  handlers:
+    - name: Restart to Apply Configuration
+      reboot:
+        reboot_timeout: 3600
+

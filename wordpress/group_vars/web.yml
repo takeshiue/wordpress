@@ -1,0 +1,6 @@
+---
+DBName: "{{ hostname }}-wordpress"
+DBUser: "wordpress"
+DBPassword: "wordpress"
+wordpress_url: "https://wordpress.org/wordpress-6.1.1.tar.gz"
+
