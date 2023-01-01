@@ -30,7 +30,8 @@
     - name: Install MariaDB
       yum:
         name:
-          - MySQL-python
+          - python3-PyMySQL
+          - python39-PyMySQL
           - mariadb-server
         state: latest
 
@@ -43,11 +44,11 @@
         state: latest
     - name: Copy Wordpress Binary Archive
       copy:
-        src: ./files/wordpress-6.1.1.tar.gz
+        src: "./files/{{ wordpress_file }}"
         dest: /tmp
     - name: Unpack Wordpress Binary
       unarchive:
-        src: /tmp/wordpress-6.1.1.tar.gz
+        src: "/tmp/{{ wordpress_file }}"
         dest: /var/www/html
         copy: no
         owner: vagrant
